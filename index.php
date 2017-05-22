@@ -11,7 +11,7 @@ and open the template in the editor.
     </head>
     <body>
         <?php
-        echo 'anh yeu em dinh anh dung'
+        echo 'anh yeu em hoang dinh tuan'
         ?>
         <img src="system/photo.jpg" border="0" alt="This is our team" width="500" height="300">
     </body>

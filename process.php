@@ -107,14 +107,6 @@ if ($method == $METHOD_GET_ANIMALS) {
     $result = db_select_list($sql);
 }
 
-if ($method == $METHOD_DELETE_ANIMAL) {
-    global $result;
-    if (db_delete_by_id('animals', 'Id', $id)) {
-        $result['delete'] = true;
-    } else {
-        $result['delete'] = false;
-    }
-}
 if ($method == $METHOD_ADD_ANIMAL) {
     global $result;
     $data = array(
@@ -153,4 +145,5 @@ if($method == $METHOD_DELETE_LIST) {
 $json = json_encode($result, JSON_PRETTY_PRINT);
 // $json = json_encode($result); // use on hostinger
 print_r($json);
+//$method = 0;
 db_disconnect();
