@@ -46,7 +46,7 @@ $weight = (int) $input['Weight'];
 $source = $input['Source'];
 $date_import = $input['Date_Import'];
 $amount = $input['Amount'];
-$number_animals = $input['Number_Animals'];
+$number_animals = (int)$input['Number_Animals'];
 //}
 //connect to database
 db_connect();
@@ -106,15 +106,15 @@ if ($method == $METHOD_GET_ANIMALS) {
     $sql = "SELECT * FROM animals WHERE Account = '$account' AND Animal_ID = '$animal_kind'";
     $result = db_select_list($sql);
 }
-
-if ($method == $METHOD_DELETE_ANIMAL) {
-    global $result;
-    if (db_delete_by_id('animals', 'Id', $id)) {
-        $result['delete'] = true;
-    } else {
-        $result['delete'] = false;
-    }
-}
+//
+//if ($method == $METHOD_DELETE_ANIMAL) {
+//    global $result;
+//    if (db_delete_by_id('animals', 'Id', $id)) {
+//        $result['delete'] = true;
+//    } else {
+//        $result['delete'] = false;
+//    }
+//}
 if ($method == $METHOD_ADD_ANIMAL) {
     global $result;
     $data = array(
@@ -140,7 +140,7 @@ if ($method == $METHOD_WITHDRAW){
     $result['withdraw'] = sub_money($amount, $account);
 }
 if($method == $METHOD_ADD_LIST){
-    $result['add_list'] = add_list_animals($number_aninamls, $source, $account, $animal_id, $sex, $health_index, $weight);
+    $result['add_list'] = add_list_animals($number_animals, $source, $account, $animal_id, $sex, $health_index, $weight);
 }
 if($method == $METHOD_DELETE_LIST) {
     $input['array_id'] = json_decode($input['array_id']);
@@ -150,7 +150,11 @@ if($method == $METHOD_DELETE_LIST) {
     $result['delete'] = true;
 }
 
+
 $json = json_encode($result, JSON_PRETTY_PRINT);
 // $json = json_encode($result); // use on hostinger
 print_r($json);
 db_disconnect();
+
+
+

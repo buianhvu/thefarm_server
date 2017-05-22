@@ -55,39 +55,14 @@ function check_money($animal_id, $source, $weight) {
         return false;
 }
 
-function add_list_animals($number_aninamls, $source, $account, $animal_id, $sex, $min_health_index, $min_weight) {
-//    $sql_find = "SELECT * FROM animal_price WHERE Animal_ID = '$animal_id' AND Source = '$source'";
-//    $data_find = db_select_row($sql_find);
-//    
-//    
-//    $total_money = 0;
-//    $money = 0;
-//    $data = array();
-//    $data_final = array();
-//    $data['Animal_ID'] = $animal_id;
-//    $data['Sex'] = $sex;
-//    $data['Source'] = $source;
-//    $data['Account'] = $account;
-//    $date['Date_Import'] = getdate();
-//    for ($i = 1; $i <= number_animals; $i++) {
-//        
-//        $data['Health_Index'] = rand($min_health_index, 100);
-//        if ($animal_id == 1)
-//            $data['Weight'] = rand($min_weight, 100);
-//        if ($animal_id == 2 || $animal == 3)
-//            $data['Weight'] = rand($min_weight, 200);
-//        if ($animal_id == 4)
-//            $data['Weight'] = rand($min_weight, 5);
-//        $total_money = $total_money + $data['Weight']*$data_find['Price_Per_Unit'];
-//        $data_final[] = $data;    
-//        } 
-//        if(total_money > )
+function add_list_animals($number_animals, $source, $account, $animal_id, $sex, $min_health_index, $min_weight) {
+
     $sql_balance = "SELECT * FROM current_balance WHERE Account = '$account' ";
     $balance_row = db_select_row($sql_balance);
     $balance = $balance_row['Balance'];
 
     $total_money = 0;
-    $money = 0;
+    //$money = 0;
     $data = array();
     $data_final = array();
     $data['Animal_ID'] = $animal_id;
@@ -97,7 +72,7 @@ function add_list_animals($number_aninamls, $source, $account, $animal_id, $sex,
     $data['Date_Import'] = getdate();
 
 
-    for ($i = 1; $i <= number_animals; $i++) {
+    for ($i = 1; $i <= $number_animals; $i++) {
         $data['Health_Index'] = rand($min_health_index, 100);
         if ($animal_id == 1)
             $data['Weight'] = rand($min_weight, 100);
@@ -113,15 +88,18 @@ function add_list_animals($number_aninamls, $source, $account, $animal_id, $sex,
             $total_money = $total_money + $money;
             if ($total_money > $balance)
                 return false;
-            $data_final[] = $data;
-        }
+           // $data_final[] = $data;
+            array_push($data_final, $data);
+        }else continue;
     }
 
-    for($i = 0; $i < $number_aninamls; $i++){
-        db_insert('animals', $data_final[i]);        
+    for($i = 0; $i < $number_animals; $i++){
+        db_insert('animals', (string)$data_final[$i]);
     }
     return true;
 }
+
+
 
 /* 
  * To change this license header, choose License Headers in Project Properties.
