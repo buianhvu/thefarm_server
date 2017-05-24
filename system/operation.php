@@ -5,11 +5,11 @@ function add_money($amount, $account) {
     $row = db_select_row($sql);
     if ($row) {
         $data = array(
-            'Id' => $row['Id'],
+//            'Id' => $row['Id'],
             'Account' => $row['Account'],
             'Balance' => $amount + $row['Balance']
         );
-        if (db_update_by_id('current_balance', 'Account', $account, $data))
+        if (db_update_by_value('current_balance', 'Account', $account, $data))
             return true;
         else {
             return false;
@@ -28,11 +28,11 @@ function sub_money($amount, $account) {
         if ($row[Balance] < $amount)
             return false;
         $data = array(
-            'Id' => $row['Id'],
+           // 'Id' => $row['Id'],
             'Account' => $row['Account'],
             'Balance' => $row['Balance'] - $amount
         );
-        if (db_update_by_id('current_balance', 'Account', $account, $data))
+        if (db_update_by_value('current_balance', 'Account', $account, $data))
             return true;
         else {
             return false;
@@ -42,6 +42,17 @@ function sub_money($amount, $account) {
     }
 }
 
+
+function get_balance($account){
+    $sql = "SELECT * FROM current_balance WHERE Account = '$account'";
+    $row = db_select_row($sql);
+    if(!empty($row)){
+        if(isset($row['Balance']))
+        return $row['Balance'];
+        else return false;
+    }
+    else return false;
+}
 
 
 
@@ -60,6 +71,7 @@ function add_list_animals($number_animals, $source, $account, $animal_id, $sex, 
     $sql_balance = "SELECT * FROM current_balance WHERE Account = '$account' ";
     $balance_row = db_select_row($sql_balance);
     $balance = $balance_row['Balance'];
+    if(empty($balance)) return false;
 
     $total_money = 0;
     //$money = 0;
@@ -69,19 +81,20 @@ function add_list_animals($number_animals, $source, $account, $animal_id, $sex, 
     $data['Sex'] = $sex;
     $data['Source'] = $source;
     $data['Account'] = $account;
-    $data['Date_Import'] = getdate();
+    $data['Date_Import'] = date('d/m/Y');
 
 
     for ($i = 1; $i <= $number_animals; $i++) {
         $data['Health_Index'] = rand($min_health_index, 100);
         if ($animal_id == 1)
-            $data['Weight'] = rand($min_weight, 100);
-        if ($animal_id == 2 || $animal_id == 3)
-            $data['Weight'] = rand($min_weight, 200);
-        if ($animal_id == 4)
+            $data['Weight'] = rand($min_weight, 150);
+        else if ($animal_id == 2 || $animal_id == 3)
+            $data['Weight'] = rand($min_weight, 600);
+        else if ($animal_id == 4)
             $data['Weight'] = rand($min_weight, 5);
-        else
+        else{
             $data['Weight'] = 50;
+        }
 
         $money = check_money($animal_id, $source, $data['Weight']);
         if ($money != false) {
@@ -93,11 +106,12 @@ function add_list_animals($number_animals, $source, $account, $animal_id, $sex, 
         }else continue;
     }
 
-    for($i = 0; $i < $number_animals; $i++){
-        db_insert('animals', (string)$data_final[$i]);
+    for($i = 0; $i < count($data_final); $i++){
+        db_insert('animals', $data_final[$i]);
     }
     return true;
 }
+
 
 
 

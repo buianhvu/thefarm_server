@@ -51,11 +51,24 @@ function db_update_by_id($table, $idfield, $idvalue, $data = array() ){
     foreach ($data as $key => $value) {
         $tmp_sql .= '`'.$key.'`'.' = '.'\''.mysqli_escape_string($conn, $value).'\',';
     }
-    
-    $sql = 'UPDATE `'.$table.'` SET  '.trim($tmp_sql, ',').' WHERE '.$idfield.' = '.(int)$idvalue.'';
-//    echo $sql;
+
+    $sql = 'UPDATE `'.$table.'` SET  '.trim($tmp_sql, ',').' WHERE '.$idfield.' = '.trim($idvalue).'';
+
     return mysqli_query($conn, $sql);
-    
+
+}
+
+
+
+function db_update_by_value($table, $idfield, $idvalue, $data = array() ){
+
+    global $conn;
+    $sql_tmp = '';
+    foreach($data as $key => $val) {
+        $sql_tmp .= $key.' = '.'\''.$val.'\',';
+    }
+    $sql = "update ".$table." set ".trim($sql_tmp, ',')." where ".$idfield." ='".trim($idvalue)."'";
+    return mysqli_query($conn, $sql);
 }
 
 function db_delete_by_id($table, $idfield, $idvalue){

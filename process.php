@@ -12,6 +12,7 @@ $METHOD_ADD_ANIMAL = 5;
 $METHOD_ADD_MONEY_TO_ACCOUNT = 6;
 $METHOD_WITHDRAW = 7;
 $METHOD_ADD_LIST = 8;
+$METHOD_CURRENT_BALANCE = 9;
 $PIG_ID = 1;
 $BUFFALO_ID = 2;
 $COW_ID = 3;
@@ -62,6 +63,7 @@ if ($method == $METHOD_LOGIN) {
     global  $result;
     $sql = "SELECT * FROM users WHERE account = '$account'";
     $row = db_select_row($sql);
+    if(empty($row)) $result['login'] = false;
     if ($row['Password'] == $password) {
         $result['login'] = true;
     } else {
@@ -84,7 +86,7 @@ if ($method == $METHOD_REGISTER) {
     if ($rs) {
         $sql = "SELECT * FROM users WHERE account = '$account'";
         $row = db_select_row($sql);
-        $data1['Id'] = $row['Id'];
+       // $data1['Id'] = $row['Id'];
         $data1['Account'] = $account;
         $data1['Balance'] = 0;
         if (db_insert('current_balance', $data1)) {
@@ -148,6 +150,11 @@ if($method == $METHOD_DELETE_LIST) {
         db_delete_by_id('animals', 'Id', $input['array_id'][$i]);
     }
     $result['delete'] = true;
+}
+
+if($method == $METHOD_CURRENT_BALANCE){
+    $result['Balance'] = get_balance($account);
+    if($result['Balance'] == false) $result['Balance'] = "0";
 }
 
 
