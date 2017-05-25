@@ -12,6 +12,8 @@ $METHOD_ADD_ANIMAL = 5;
 $METHOD_ADD_MONEY_TO_ACCOUNT = 6;
 $METHOD_WITHDRAW = 7;
 $METHOD_ADD_LIST = 8;
+$METHOD_CURRENT_BALANCE = 9;
+$METHOD_SELL_ANIMALS = 10;
 $PIG_ID = 1;
 $BUFFALO_ID = 2;
 $COW_ID = 3;
@@ -46,7 +48,8 @@ $weight = (int) $input['Weight'];
 $source = $input['Source'];
 $date_import = $input['Date_Import'];
 $amount = $input['Amount'];
-$number_animals = $input['Number_Animals'];
+$number_animals = (int)$input['Number_Animals'];
+$array_id = json_decode($input['array_id']);
 //}
 //connect to database
 db_connect();
@@ -61,12 +64,17 @@ db_connect();
 if ($method == $METHOD_LOGIN) {
     global  $result;
     $sql = "SELECT * FROM users WHERE account = '$account'";
+
     $row = db_select_row($sql);
+    $result['Balance'] = get_balance($account);
+    if($result['Balance'] == false) $result['Balance'] = "0";
+    if(empty($row)) $result['login'] = false;
     if ($row['Password'] == $password) {
         $result['login'] = true;
     } else {
         $result['login'] = false;
     }
+    
 }
 
 if ($method == $METHOD_REGISTER) {
@@ -84,7 +92,7 @@ if ($method == $METHOD_REGISTER) {
     if ($rs) {
         $sql = "SELECT * FROM users WHERE account = '$account'";
         $row = db_select_row($sql);
-        $data1['Id'] = $row['Id'];
+       // $data1['Id'] = $row['Id'];
         $data1['Account'] = $account;
         $data1['Balance'] = 0;
         if (db_insert('current_balance', $data1)) {
@@ -106,7 +114,15 @@ if ($method == $METHOD_GET_ANIMALS) {
     $sql = "SELECT * FROM animals WHERE Account = '$account' AND Animal_ID = '$animal_kind'";
     $result = db_select_list($sql);
 }
-
+//
+//if ($method == $METHOD_DELETE_ANIMAL) {
+//    global $result;
+//    if (db_delete_by_id('animals', 'Id', $id)) {
+//        $result['delete'] = true;
+//    } else {
+//        $result['delete'] = false;
+//    }
+//}
 if ($method == $METHOD_ADD_ANIMAL) {
     global $result;
     $data = array(
@@ -127,23 +143,43 @@ if ($method == $METHOD_ADD_ANIMAL) {
 
 if ($method == $METHOD_ADD_MONEY_TO_ACCOUNT) {
     $result['add_money'] = add_money($amount, $account);
+    $result['new_balance'] = get_balance($account);
 }
 if ($method == $METHOD_WITHDRAW){
     $result['withdraw'] = sub_money($amount, $account);
+    $result['new_balance'] = get_balance($account);
 }
 if($method == $METHOD_ADD_LIST){
-    $result['add_list'] = add_list_animals($number_aninamls, $source, $account, $animal_id, $sex, $health_index, $weight);
+    $result['add_list'] = add_list_animals($number_animals, $source, $account, $animal_id, $sex, $health_index, $weight, $amount);
+    if($result['add_list'] != true){
+        $result['mess'] = $result['add_list'];
+        $result['add_list'] = false;
+    }
+    else    $result['mess'] = "Thank you";
+    $result['amount'] = "$amount";
 }
 if($method == $METHOD_DELETE_LIST) {
-    $input['array_id'] = json_decode($input['array_id']);
-    for($i= 0; $i < count($input['array_id']); $i++ ){
-        db_delete_by_id('animals', 'Id', $input['array_id'][$i]);
+   // $input['array_id'] = json_decode($input['array_id']);
+    for($i= 0; $i < count($array_id); $i++ ){
+        db_delete_by_id('animals', 'Id', $array_id[$i]);
     }
     $result['delete'] = true;
 }
 
+if($method == $METHOD_CURRENT_BALANCE){
+    $result['Balance'] = get_balance($account);
+    if($result['Balance'] == false) $result['Balance'] = "0";
+}
+
+if($method == $METHOD_SELL_ANIMALS){
+
+}
+
+
 $json = json_encode($result, JSON_PRETTY_PRINT);
 // $json = json_encode($result); // use on hostinger
 print_r($json);
-//$method = 0;
 db_disconnect();
+
+
+
