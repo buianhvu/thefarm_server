@@ -13,6 +13,7 @@ $METHOD_ADD_MONEY_TO_ACCOUNT = 6;
 $METHOD_WITHDRAW = 7;
 $METHOD_ADD_LIST = 8;
 $METHOD_CURRENT_BALANCE = 9;
+$METHOD_SELL_ANIMALS = 10;
 $PIG_ID = 1;
 $BUFFALO_ID = 2;
 $COW_ID = 3;
@@ -48,6 +49,7 @@ $source = $input['Source'];
 $date_import = $input['Date_Import'];
 $amount = $input['Amount'];
 $number_animals = (int)$input['Number_Animals'];
+$array_id = json_decode($input['array_id']);
 //}
 //connect to database
 db_connect();
@@ -62,13 +64,17 @@ db_connect();
 if ($method == $METHOD_LOGIN) {
     global  $result;
     $sql = "SELECT * FROM users WHERE account = '$account'";
+
     $row = db_select_row($sql);
+    $result['Balance'] = get_balance($account);
+    if($result['Balance'] == false) $result['Balance'] = "0";
     if(empty($row)) $result['login'] = false;
     if ($row['Password'] == $password) {
         $result['login'] = true;
     } else {
         $result['login'] = false;
     }
+    
 }
 
 if ($method == $METHOD_REGISTER) {
@@ -142,12 +148,18 @@ if ($method == $METHOD_WITHDRAW){
     $result['withdraw'] = sub_money($amount, $account);
 }
 if($method == $METHOD_ADD_LIST){
-    $result['add_list'] = add_list_animals($number_animals, $source, $account, $animal_id, $sex, $health_index, $weight);
+    $result['add_list'] = add_list_animals($number_animals, $source, $account, $animal_id, $sex, $health_index, $weight, $amount);
+    if($result['add_list'] != true){
+        $result['mess'] = $result['add_list'];
+        $result['add_list'] = false;
+    }
+    else    $result['mess'] = "Thank you";
+    $result['amount'] = "$amount";
 }
 if($method == $METHOD_DELETE_LIST) {
-    $input['array_id'] = json_decode($input['array_id']);
-    for($i= 0; $i < count($input['array_id']); $i++ ){
-        db_delete_by_id('animals', 'Id', $input['array_id'][$i]);
+   // $input['array_id'] = json_decode($input['array_id']);
+    for($i= 0; $i < count($array_id); $i++ ){
+        db_delete_by_id('animals', 'Id', $array_id[$i]);
     }
     $result['delete'] = true;
 }
@@ -155,6 +167,10 @@ if($method == $METHOD_DELETE_LIST) {
 if($method == $METHOD_CURRENT_BALANCE){
     $result['Balance'] = get_balance($account);
     if($result['Balance'] == false) $result['Balance'] = "0";
+}
+
+if($method == $METHOD_SELL_ANIMALS){
+    $result = sell_animals($account, $array_id);
 }
 
 

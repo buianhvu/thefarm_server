@@ -1,5 +1,13 @@
 <?php
 
+
+$TYPE_IN = "In";
+$TYPE_OUT = "Out";
+$ACTION_BUY_ANIMALS = "Buy_Animal";
+$ACTION_SELL_ANIMALS = "Sell_Animal";
+$ACTION_BUY_FOOD = "Buy_Food";
+$ACTION_SELL_FOOD = "Sell_Food";
+
 function add_money($amount, $account) {
     $sql = "SELECT * FROM current_balance WHERE account = '$account'";
     $row = db_select_row($sql);
@@ -61,17 +69,17 @@ function check_money($animal_id, $source, $weight) {
     $data = db_select_row($sql);
     $money = $weight * $data['Price_Per_Unit'];
     if ($money > 0)
-        return money;
+        return $money;
     else
         return false;
 }
 
-function add_list_animals($number_animals, $source, $account, $animal_id, $sex, $min_health_index, $min_weight) {
+function add_list_animals($number_animals, $source, $account, $animal_id, $sex, $min_health_index, $min_weight, &$amount) {
 
     $sql_balance = "SELECT * FROM current_balance WHERE Account = '$account' ";
     $balance_row = db_select_row($sql_balance);
     $balance = $balance_row['Balance'];
-    if(empty($balance)) return false;
+    if(empty($balance)) return "Balance not available";
 
     $total_money = 0;
     //$money = 0;
@@ -99,8 +107,9 @@ function add_list_animals($number_animals, $source, $account, $animal_id, $sex, 
         $money = check_money($animal_id, $source, $data['Weight']);
         if ($money != false) {
             $total_money = $total_money + $money;
-            if ($total_money > $balance)
-                return false;
+            if ($total_money > $balance) {
+                return "Not enough money";
+            }
            // $data_final[] = $data;
             array_push($data_final, $data);
         }else continue;
@@ -109,9 +118,45 @@ function add_list_animals($number_animals, $source, $account, $animal_id, $sex, 
     for($i = 0; $i < count($data_final); $i++){
         db_insert('animals', $data_final[$i]);
     }
+    sub_money($total_money, $account);
+    global $TYPE_OUT;
+    global $ACTION_BUY_ANIMALS;
+    transaction($account, $total_money, $TYPE_OUT , $ACTION_BUY_ANIMALS );
+    $amount = $total_money;
     return true;
 }
 
+
+function sell_animals($account, $array_id){
+    global $TYPE_IN;
+    global $ACTION_SELL_ANIMALS;
+    $total_money = 0;
+    foreach ($array_id as $item) {
+        $sql = "SELECT * FROM "."animals WHERE Id = '$item'";
+        $row = db_select_row($sql);
+        $money = check_money($row['Animal_ID'], $row['Source'], $row['Weight']);
+        if($money == false) return false;
+        $total_money = $total_money + $money;
+        db_delete_by_id('animals', 'Id', $item );
+    }
+
+    add_money($total_money, $account);
+    transaction($account, $total_money, $TYPE_IN, $ACTION_SELL_ANIMALS);
+    $result['delete'] = true;
+    $result['total_money'] = "$total_money";
+    return $result;
+}
+
+function transaction($account, $money ,$type, $action){
+    if(strcmp($type,"In") != 0 && strcmp($type, "Out") != 0)return false;
+    $data['Account'] = $account;
+    $data['Money'] = $money;
+    $data['Type'] = $type;
+    $data['Action'] = $action;
+    $data['Date_Import'] = date('d/m/Y');
+    db_insert('transaction', $data);
+    return true;
+}
 
 
 
