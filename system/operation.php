@@ -128,7 +128,6 @@ function add_list_animals($number_animals, $source, $account, $animal_id, $sex, 
 
 
 function sell_animals($account, $array_id){
-
     global $TYPE_IN;
     global $ACTION_SELL_ANIMALS;
     $total_money = 0;
@@ -154,6 +153,7 @@ function transaction($account, $money ,$type, $action){
     $data['Money'] = $money;
     $data['Type'] = $type;
     $data['Action'] = $action;
+    $data['Date_Import'] = date('d/m/Y');
     db_insert('transaction', $data);
     return true;
 }

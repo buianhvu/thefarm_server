@@ -172,7 +172,7 @@ if($method == $METHOD_CURRENT_BALANCE){
 }
 
 if($method == $METHOD_SELL_ANIMALS){
-
+    $result = sell_animals($account, $array_id);
 }
 
 
